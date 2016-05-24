@@ -1,5 +1,7 @@
 Strict
 
+Import brl.databuffer
+
 Public
 
 ' Preprocessor related:
@@ -29,7 +31,11 @@ Class Application Extends App
 		
 		canvasA = New Canvas(Null)
 		canvasB = New Canvas(Null)
-		
+
+		mojo2.Image.SetFlagsMask(mojo2.Image.Managed)
+		myImage = mojo2.Image.Load("myimage.png", 0.0, 0.0)
+		screenGrab = Null
+
 		Return 0
 	End
 	
@@ -84,14 +90,35 @@ Class Application Extends App
 		
 		canvasB.Clear(0.0, 1.0, 0.0)
 		
-		canvasB.Flush()
+		canvasB.DrawImage(myImage, 0, 0)
 		
+		If screenGrab = Null
+			screenGrab = ScreenGrab(canvasB, 0, 0, myImage.Width(), myImage.Height())
+		Else
+			canvasB.DrawImage(screenGrab, myImage.Width() + 50, 50)
+		End If
+
+		canvasB.Flush()
+
 		Return 0
 	End
+
+	Method ScreenGrab:Image(canvas:Canvas, x:Int, y:Int, width:Int, height:Int)
+	  Local screenShot:mojo2.Image = New mojo2.Image(width, height, 0.0, 0.0)
+		Local pixels:DataBuffer = New DataBuffer(width*height*4)
+
+		canvas.SetAlpha(1.0)
+	  canvas.ReadPixels(x, y, width, height, pixels)
+	  screenShot.WritePixels(0, 0, width, height, pixels)
+
+	  Return screenShot
+	End Method
 	
 	' Fields:
 	Field canvasA:Canvas
 	Field canvasB:Canvas
+	Field myImage:mojo2.Image
+	Field screenGrab:mojo2.Image
 End
 
 ' Functions:
